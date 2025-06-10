@@ -4,22 +4,32 @@ import 'package:provider/provider.dart';
 import '../../main.dart';
 import 'coordinates_iframe_widget.dart';
 
-class IocPocPage extends StatefulWidget {
+class IoCPoCPage extends StatefulWidget {
   @override
-  State<IocPocPage> createState() => _IocPocPageState();
+  State<IoCPoCPage> createState() => _IoCPoCPageState();
 }
 
-class _IocPocPageState extends State<IocPocPage> {
+class _IoCPoCPageState extends State<IoCPoCPage> {
   final GlobalKey _imageKey = GlobalKey();
+
+  // Region grid constants
+  static const double _panoramaWidthRatio = 0.67;
+  // ignore: constant_identifier_names
+  static const double _3dWidthRatio = 0.33;
+  static const double _topRowHeightRatio = 0.5;
+  static const double _bottomRowHeightRatio = 0.5;
+  static const double _bottomColumnCount = 3.0;
+  static const double _imageWidthRatio = 0.95;
+  static const double _imageHeightRatio = 0.85;
 
   String _getRegionFromPosition(Offset position, Size imageSize) {
     final x = position.dx;
     final y = position.dy;
 
     // Top row (first half of height)
-    if (y < imageSize.height / 2) {
+    if (y < imageSize.height * _topRowHeightRatio) {
       // Top row, first column (67.5% width) - Panorama Region
-      if (x < imageSize.width * 0.675) {
+      if (x < imageSize.width * _panoramaWidthRatio) {
         return 'Panorama';
       }
       // Top row, second column (32.5% width) - 3D
@@ -29,7 +39,7 @@ class _IocPocPageState extends State<IocPocPage> {
     }
     // Bottom row (second half of height) - 3 evenly distributed columns
     else {
-      final columnWidth = imageSize.width / 3;
+      final columnWidth = imageSize.width / _bottomColumnCount;
       if (x < columnWidth) {
         return 'Longitudinal';
       } else if (x < columnWidth * 2) {
@@ -47,23 +57,31 @@ class _IocPocPageState extends State<IocPocPage> {
 
     switch (region) {
       case 'Panorama':
-        return Offset(
-            x / (imageSize.width * 0.675), y / (imageSize.height * 0.5));
+        return Offset(x / (imageSize.width * _panoramaWidthRatio),
+            y / (imageSize.height * _topRowHeightRatio));
       case '3D':
-        return Offset((x - imageSize.width * 0.675) / (imageSize.width * 0.325),
-            y / (imageSize.height * 0.5));
+        return Offset(
+            (x - imageSize.width * _panoramaWidthRatio) /
+                (imageSize.width * _3dWidthRatio),
+            y / (imageSize.height * _topRowHeightRatio));
       case 'Longitudinal':
-        final columnWidth = imageSize.width / 3;
-        return Offset(x / columnWidth,
-            (y - imageSize.height * 0.5) / (imageSize.height * 0.5));
+        final columnWidth = imageSize.width / _bottomColumnCount;
+        return Offset(
+            x / columnWidth,
+            (y - imageSize.height * _topRowHeightRatio) /
+                (imageSize.height * _bottomRowHeightRatio));
       case 'Cross-sectional':
-        final columnWidth = imageSize.width / 3;
-        return Offset((x - columnWidth) / columnWidth,
-            (y - imageSize.height * 0.5) / (imageSize.height * 0.5));
+        final columnWidth = imageSize.width / _bottomColumnCount;
+        return Offset(
+            (x - columnWidth) / columnWidth,
+            (y - imageSize.height * _topRowHeightRatio) /
+                (imageSize.height * _bottomRowHeightRatio));
       case 'Axial':
-        final columnWidth = imageSize.width / 3;
-        return Offset((x - columnWidth * 2) / columnWidth,
-            (y - imageSize.height * 0.5) / (imageSize.height * 0.5));
+        final columnWidth = imageSize.width / _bottomColumnCount;
+        return Offset(
+            (x - columnWidth * 2) / columnWidth,
+            (y - imageSize.height * _topRowHeightRatio) /
+                (imageSize.height * _bottomRowHeightRatio));
       default:
         return Offset(0, 0);
     }
@@ -83,9 +101,10 @@ class _IocPocPageState extends State<IocPocPage> {
               Container(
                 key: _imageKey,
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.95,
-                  maxHeight: MediaQuery.of(context).size.height *
-                      0.85, // Increased from 0.75
+                  maxWidth:
+                      MediaQuery.of(context).size.width * _imageWidthRatio,
+                  maxHeight:
+                      MediaQuery.of(context).size.height * _imageHeightRatio,
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -107,8 +126,9 @@ class _IocPocPageState extends State<IocPocPage> {
                         final localPosition =
                             renderBox.globalToLocal(event.position);
                         final imageSize = Size(
-                          MediaQuery.of(context).size.width * 0.95,
-                          MediaQuery.of(context).size.height * 0.85, // Updated
+                          MediaQuery.of(context).size.width * _imageWidthRatio,
+                          MediaQuery.of(context).size.height *
+                              _imageHeightRatio,
                         );
                         final region =
                             _getRegionFromPosition(localPosition, imageSize);
@@ -126,8 +146,9 @@ class _IocPocPageState extends State<IocPocPage> {
                     child: GestureDetector(
                       onPanStart: (DragStartDetails details) {
                         final imageSize = Size(
-                          MediaQuery.of(context).size.width * 0.95,
-                          MediaQuery.of(context).size.height * 0.85, // Updated
+                          MediaQuery.of(context).size.width * _imageWidthRatio,
+                          MediaQuery.of(context).size.height *
+                              _imageHeightRatio,
                         );
                         final region = _getRegionFromPosition(
                             details.localPosition, imageSize);
@@ -140,8 +161,9 @@ class _IocPocPageState extends State<IocPocPage> {
                       },
                       onPanUpdate: (DragUpdateDetails details) {
                         final imageSize = Size(
-                          MediaQuery.of(context).size.width * 0.95,
-                          MediaQuery.of(context).size.height * 0.85, // Updated
+                          MediaQuery.of(context).size.width * _imageWidthRatio,
+                          MediaQuery.of(context).size.height *
+                              _imageHeightRatio,
                         );
                         final region = _getRegionFromPosition(
                             details.localPosition, imageSize);
@@ -165,9 +187,10 @@ class _IocPocPageState extends State<IocPocPage> {
                             height: double.infinity,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                width: MediaQuery.of(context).size.width * 0.95,
+                                width: MediaQuery.of(context).size.width *
+                                    _imageWidthRatio,
                                 height: MediaQuery.of(context).size.height *
-                                    0.85, // Updated
+                                    _imageHeightRatio,
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.surface,
                                   borderRadius: BorderRadius.circular(12),
@@ -259,6 +282,15 @@ class RegionGridPainter extends CustomPainter {
   final Offset? dragStart;
   final Offset? dragCurrent;
 
+  // Use the same constants as the parent class
+  static const double _panoramaWidthRatio = 0.67;
+  // ignore: constant_identifier_names
+  static const double _3dWidthRatio = 0.33;
+  static const double _topRowHeightRatio = 0.5;
+  static const double _bottomRowHeightRatio = 0.5;
+  static const double _bottomColumnCount = 3.0;
+  static const double _verticalLineOffset = 0.025;
+
   RegionGridPainter({
     this.highlightedRegion,
     this.dragStart,
@@ -287,29 +319,31 @@ class RegionGridPainter extends CustomPainter {
 
     // Draw grid lines
     // Vertical line at 67.5% (separating Panorama and 3D)
+    final verticalLineOffset = size.height * _verticalLineOffset;
     canvas.drawLine(
-      Offset(size.width * 0.675, 0),
-      Offset(size.width * 0.675, size.height * 0.5),
+      Offset(size.width * _panoramaWidthRatio, verticalLineOffset),
+      Offset(
+          size.width * _panoramaWidthRatio, size.height * _topRowHeightRatio),
       paint,
     );
 
     // Horizontal line at 50% (separating top and bottom rows)
     canvas.drawLine(
-      Offset(0, size.height * 0.5),
-      Offset(size.width, size.height * 0.5),
+      Offset(0, size.height * _topRowHeightRatio),
+      Offset(size.width, size.height * _topRowHeightRatio),
       paint,
     );
 
     // Vertical lines for bottom row (3 equal columns)
-    final columnWidth = size.width / 3;
+    final columnWidth = size.width / _bottomColumnCount;
     canvas.drawLine(
-      Offset(columnWidth, size.height * 0.5),
-      Offset(columnWidth, size.height),
+      Offset(columnWidth, size.height * _topRowHeightRatio),
+      Offset(columnWidth, size.height - verticalLineOffset),
       paint,
     );
     canvas.drawLine(
-      Offset(columnWidth * 2, size.height * 0.5),
-      Offset(columnWidth * 2, size.height),
+      Offset(columnWidth * 2, size.height * _topRowHeightRatio),
+      Offset(columnWidth * 2, size.height - verticalLineOffset),
       paint,
     );
 
@@ -319,25 +353,35 @@ class RegionGridPainter extends CustomPainter {
 
       switch (highlightedRegion) {
         case 'Panorama':
-          highlightRect =
-              Rect.fromLTWH(0, 0, size.width * 0.675, size.height * 0.5);
-          break;
+          highlightRect = Rect.fromLTWH(
+              0,
+              verticalLineOffset,
+              size.width * _panoramaWidthRatio,
+              size.height * _topRowHeightRatio - verticalLineOffset);
         case '3D':
           highlightRect = Rect.fromLTWH(
-              size.width * 0.675, 0, size.width * 0.325, size.height * 0.5);
-          break;
+              size.width * _panoramaWidthRatio,
+              verticalLineOffset,
+              size.width * _3dWidthRatio,
+              size.height * _topRowHeightRatio - verticalLineOffset);
         case 'Longitudinal':
           highlightRect = Rect.fromLTWH(
-              0, size.height * 0.5, columnWidth, size.height * 0.5);
-          break;
+              0,
+              size.height * _topRowHeightRatio,
+              columnWidth,
+              size.height * _bottomRowHeightRatio - verticalLineOffset);
         case 'Cross-sectional':
           highlightRect = Rect.fromLTWH(
-              columnWidth, size.height * 0.5, columnWidth, size.height * 0.5);
-          break;
+              columnWidth,
+              size.height * _topRowHeightRatio,
+              columnWidth,
+              size.height * _bottomRowHeightRatio - verticalLineOffset);
         case 'Axial':
-          highlightRect = Rect.fromLTWH(columnWidth * 2, size.height * 0.5,
-              columnWidth, size.height * 0.5);
-          break;
+          highlightRect = Rect.fromLTWH(
+              columnWidth * 2,
+              size.height * _topRowHeightRatio,
+              columnWidth,
+              size.height * _bottomRowHeightRatio - verticalLineOffset);
         default:
           highlightRect = Rect.zero;
       }
@@ -394,31 +438,32 @@ class RegionGridPainter extends CustomPainter {
     final y = position.dy;
 
     // Determine which region the position is in and return its bounds
-    if (y < size.height / 2) {
+    if (y < size.height * _topRowHeightRatio) {
       // Top row
-      if (x < size.width * 0.675) {
+      if (x < size.width * _panoramaWidthRatio) {
         // Panorama region
-        return Rect.fromLTWH(0, 0, size.width * 0.675, size.height * 0.5);
+        return Rect.fromLTWH(0, 0, size.width * _panoramaWidthRatio,
+            size.height * _topRowHeightRatio);
       } else {
         // 3D region
-        return Rect.fromLTWH(
-            size.width * 0.675, 0, size.width * 0.325, size.height * 0.5);
+        return Rect.fromLTWH(size.width * _panoramaWidthRatio, 0,
+            size.width * _3dWidthRatio, size.height * _topRowHeightRatio);
       }
     } else {
       // Bottom row
-      final columnWidth = size.width / 3;
+      final columnWidth = size.width / _bottomColumnCount;
       if (x < columnWidth) {
         // Longitudinal region
-        return Rect.fromLTWH(
-            0, size.height * 0.5, columnWidth, size.height * 0.5);
+        return Rect.fromLTWH(0, size.height * _topRowHeightRatio, columnWidth,
+            size.height * _bottomRowHeightRatio);
       } else if (x < columnWidth * 2) {
         // Cross-sectional region
-        return Rect.fromLTWH(
-            columnWidth, size.height * 0.5, columnWidth, size.height * 0.5);
+        return Rect.fromLTWH(columnWidth, size.height * _topRowHeightRatio,
+            columnWidth, size.height * _bottomRowHeightRatio);
       } else {
         // Axial region
-        return Rect.fromLTWH(
-            columnWidth * 2, size.height * 0.5, columnWidth, size.height * 0.5);
+        return Rect.fromLTWH(columnWidth * 2, size.height * _topRowHeightRatio,
+            columnWidth, size.height * _bottomRowHeightRatio);
       }
     }
   }

@@ -338,7 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = IocPocPage(); // Changed from GeneratorPage to IocPocPage
+        page = IoCPoCPage(); // Changed from GeneratorPage to IocPocPage
       case 1:
         page = GeneratorPage(); // Changed from GeneratorPage to FavoritesPage
       default:
