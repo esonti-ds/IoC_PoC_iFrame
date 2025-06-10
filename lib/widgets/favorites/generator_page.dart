@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../main.dart';
+import '../../main.dart';
 import 'big_card.dart';
-import 'iframe_favorites_widget.dart';
+import 'favorites_iframe_widget.dart';
 
 class GeneratorPage extends StatelessWidget {
   @override
@@ -47,7 +47,7 @@ class GeneratorPage extends StatelessWidget {
             ],
           ),
         ),
-        IframeFavoritesWidget(),
+        FavoritesIframeWidget(),
       ],
     );
   }

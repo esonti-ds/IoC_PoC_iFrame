@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // Import the separated widgets
-import 'widgets/ioc_poc_page.dart';
-import 'widgets/generator_page.dart';
+import 'widgets/ioc/ioc_poc_page.dart';
+import 'widgets/favorites/generator_page.dart';
 
 // Define JavaScript interop function
 @JS('sendMessageToParent')

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'favorites_page.dart';
 
-class IframeFavoritesWidget extends StatefulWidget {
-  const IframeFavoritesWidget({super.key});
+class FavoritesIframeWidget extends StatefulWidget {
+  const FavoritesIframeWidget({super.key});
 
   @override
-  State<IframeFavoritesWidget> createState() => _IframeFavoritesWidgetState();
+  State<FavoritesIframeWidget> createState() => _FavoritesIframeWidgetState();
 }
 
-class _IframeFavoritesWidgetState extends State<IframeFavoritesWidget> {
+class _FavoritesIframeWidgetState extends State<FavoritesIframeWidget> {
   bool _showIframe = false;
 
   @override
