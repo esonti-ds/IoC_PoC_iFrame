@@ -169,7 +169,7 @@ class MyAppState extends ChangeNotifier {
       _sendMessageToParent({
         'type': 'data',
         'origin': web.window.location.origin,
-        'details': 'Message - ${current.asLowerCase}',
+        'details': 'Message : ${current.asLowerCase}',
         'timestamp': DateTime.now().millisecondsSinceEpoch
       });
     }
