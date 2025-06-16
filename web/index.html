@@ -56,22 +56,10 @@
     // Make function globally available
     window.sendMessageToParent = sendMessageToParent;
     
-    // Test function on load
+    // Load event handler
     window.addEventListener('load', function() {
-      console.log('iframe.flutterapp.nativejs: Status Update - Iframe is ready to communicate');
-      // Send initial message to parent
-      sendMessageToParent({
-        type: 'status',
-        origin: window.location.origin,
-        details: 'Iframe is ready to communicate',
-        timestamp: new Date().toISOString()
-      });
+      console.log('iframe.flutterapp.nativejs: App loaded and ready');
     });
-
-    // // Listen for messages from parent
-    // window.addEventListener('message', function(event) {
-    //   console.log('Iframe received message:', event.data, 'from:', event.origin);
-    // });
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

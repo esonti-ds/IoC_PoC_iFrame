@@ -2,6 +2,7 @@
 
 import 'dart:js';
 import 'dart:js_interop';
+import 'dart:html' as html;
 
 import 'package:web/web.dart' as web;
 import 'package:english_words/english_words.dart';
@@ -108,9 +109,23 @@ class MyApp extends StatelessWidget {
     }
   }
 
+  // Handle different message types
   void _handleStatusMessage(dynamic details) {
-    // Handle status message logic here
-    web.console.log('Processing status message: $details' as JSAny?);
+    // Check for navigation rail visibility control
+    if (details != null) {
+      final detailsString = details.toString().toLowerCase();
+      if (detailsString == 'selected') {
+        // Show navigation rail by updating global app state
+        if (_globalAppState != null) {
+          _globalAppState!.updateNavigationRailVisibility(true);
+        }
+      } else if (detailsString == 'deselected') {
+        // Hide navigation rail by updating global app state
+        if (_globalAppState != null) {
+          _globalAppState!.updateNavigationRailVisibility(false);
+        }
+      }
+    }
   }
 
   void _handleDataMessage(dynamic details) {
@@ -144,6 +159,9 @@ class MyAppState extends ChangeNotifier {
   String? _tokenResponse;
   DateTime? _tokenResponseTime;
 
+  // Navigation rail visibility
+  bool _showNavigationRail = false;
+
   // Getters for mouse interaction data
   String get currentRegion => _currentRegion;
   Offset? get relativePosition => _relativePosition;
@@ -154,6 +172,9 @@ class MyAppState extends ChangeNotifier {
   // Getters for token data
   String? get tokenResponse => _tokenResponse;
   DateTime? get tokenResponseTime => _tokenResponseTime;
+
+  // Getter for navigation rail visibility
+  bool get showNavigationRail => _showNavigationRail;
 
   void getNext() {
     current = WordPair.random();
@@ -295,6 +316,14 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateNavigationRailVisibility(bool show) {
+    if (_showNavigationRail != show) {
+      _showNavigationRail = show;
+      web.console.log('Navigation rail visibility updated: $show' as JSAny?);
+      notifyListeners();
+    }
+  }
+
   void _sendMessageToParent(Map<String, dynamic> message) {
     try {
       web.console.log(
@@ -344,57 +373,99 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        backgroundColor: Colors.grey[900], // Dark background
-        body: Row(
-          children: [
-            SafeArea(
-              child: Container(
-                color: Colors.grey[850], // Dark navigation rail background
-                child: NavigationRail(
-                  backgroundColor: Colors.grey[850],
-                  selectedIconTheme: IconThemeData(
-                    color: Colors.deepOrange,
-                  ),
-                  unselectedIconTheme: IconThemeData(
-                    color: Colors.grey[400],
-                  ),
-                  selectedLabelTextStyle: TextStyle(
-                    color: Colors.deepOrange,
-                  ),
-                  unselectedLabelTextStyle: TextStyle(
-                    color: Colors.grey[400],
-                  ),
-                  extended: false, // Always show only icons
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: Icon(Icons.medical_information),
-                      label: Text('IoC_PoC_Widget'),
-                    ),
-                    NavigationRailDestination(
-                      icon: Icon(Icons.favorite),
-                      label: Text('Favorites_PoC_Widget'),
-                    ),
-                  ],
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: (value) {
-                    setState(() {
-                      selectedIndex = value;
-                    });
-                  },
+
+    return Consumer<MyAppState>(
+      builder: (context, appState, child) {
+        return LayoutBuilder(builder: (context, constraints) {
+          return Scaffold(
+            backgroundColor: Colors.grey[900], // Dark background
+            body: Stack(
+              children: [
+                // Main page content
+                Container(
+                  color: Colors.grey[800], // Dark main content background
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: page,
                 ),
-              ),
+                // Floating navigation rail - conditional visibility
+                if (appState.showNavigationRail)
+                  Positioned(
+                    top: 5,
+                    left: (constraints.maxWidth - 120) / 2,
+                    child: AnimatedOpacity(
+                      opacity: appState.showNavigationRail ? 1.0 : 0.0,
+                      duration: Duration(milliseconds: 200),
+                      child: Container(
+                        width: 120,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildNavButton(
+                              icon: Icons.medical_information,
+                              index: 0,
+                              isSelected: selectedIndex == 0,
+                            ),
+                            Container(
+                              width: 1,
+                              height: 30,
+                              color: Colors.grey[600],
+                            ),
+                            _buildNavButton(
+                              icon: Icons.favorite,
+                              index: 1,
+                              isSelected: selectedIndex == 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            Expanded(
-              child: Container(
-                color: Colors.grey[800], // Dark main content background
-                child: page,
-              ),
-            ),
-          ],
+          );
+        });
+      },
+    );
+  }
+
+  Widget _buildNavButton({
+    required IconData icon,
+    required int index,
+    required bool isSelected,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedIndex = index;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.deepOrange.withOpacity(0.3)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
         ),
-      );
-    });
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.deepOrange : Colors.grey[300],
+          size: 24,
+        ),
+      ),
+    );
   }
 }
