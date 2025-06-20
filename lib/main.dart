@@ -27,8 +27,33 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // Check if running inside an iframe
+  bool get _isRunningInIframe {
+    try {
+      return html.window.parent != html.window;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Check if running in iframe first
+    if (!_isRunningInIframe) {
+      return MaterialApp(
+        title: 'IoC PoC - Error',
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.red,
+            brightness: Brightness.dark,
+          ),
+        ),
+        home: IframeRequiredPage(),
+      );
+    }
+
     _setupMessageListener();
 
     return ChangeNotifierProvider(
@@ -144,6 +169,94 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Error page shown when app is not running in iframe
+class IframeRequiredPage extends StatelessWidget {
+  const IframeRequiredPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      body: Center(
+        child: Container(
+          padding: EdgeInsets.all(32),
+          margin: EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.red[900]!.withOpacity(0.2),
+            border: Border.all(color: Colors.red[400]!, width: 2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Colors.red[400],
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Access Denied',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red[400],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'This module is designed to run only within the context of Diagnosis Application.',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[300],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Direct access is not permitted.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[400],
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 16,
+                      color: Colors.blue[300],
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Please access Implant On Core module through the Diagnosis application',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue[300],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favorites = <WordPair>[];
@@ -201,21 +314,6 @@ class MyAppState extends ChangeNotifier {
   void updateMouseHover(String region, Offset? relativePos) {
     _currentRegion = region;
     _relativePosition = relativePos;
-    // final percentX =
-    //     relativePos != null ? (relativePos.dx * 100).toStringAsFixed(1) : '0.0';
-    // final percentY =
-    //     relativePos != null ? (relativePos.dy * 100).toStringAsFixed(1) : '0.0';
-    // final hoverMessage = '$region at ($percentX%, $percentY%)';
-    // // Send message to parent with hover data
-    // if (region.isNotEmpty && relativePos != null) {
-    //   _sendMessageToParent({
-    //     'type': 'data',
-    //     'origin': web.window.location.origin,
-    //     'details': 'Message: $hoverMessage',
-    //     'timestamp': DateTime.now().millisecondsSinceEpoch,
-    //   });
-    // }
-
     notifyListeners();
   }
 
@@ -260,15 +358,6 @@ class MyAppState extends ChangeNotifier {
 
   void updateMouseDragEnd() {
     _isDragging = false;
-
-    // Send message to parent with drag end data
-    // _sendMessageToParent({
-    //   'type': 'data',
-    //   'origin': web.window.location.origin,
-    //   'details': 'Message: $_currentRegion',
-    //   'timestamp': DateTime.now().millisecondsSinceEpoch,
-    // });
-
     _dragStartPosition = null;
     _currentDragPosition = null;
     notifyListeners();
@@ -277,15 +366,6 @@ class MyAppState extends ChangeNotifier {
   void updateMouseExit() {
     _currentRegion = '';
     _relativePosition = null;
-
-    // Send message to parent with mouse exit data
-    // _sendMessageToParent({
-    //   'type': 'data',
-    //   'origin': web.window.location.origin,
-    //   'details': 'Mouse exited image region',
-    //   'timestamp': DateTime.now().millisecondsSinceEpoch,
-    // });
-
     notifyListeners();
   }
 
