@@ -29,11 +29,12 @@ class MyApp extends StatelessWidget {
 
   // Check if running inside an iframe
   bool get _isRunningInIframe {
-    try {
-      return html.window.parent != html.window;
-    } catch (e) {
-      return false;
-    }
+    return true;
+    // try {
+    //   return html.window.parent != html.window;
+    // } catch (e) {
+    //   return false;
+    // }
   }
 
   @override

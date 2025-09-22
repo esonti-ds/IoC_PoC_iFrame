@@ -38,15 +38,15 @@
     // Helper function to send messages to parent
     function sendMessageToParent(message) {
       try {
-        if (window.parent !== window) {
-          console.log('iframe.flutterapp.nativejs: Send Message - ', message);
-          window.parent.postMessage(message, '*');
-          console.log('iframe.flutterapp.nativejs: Send Message - Success');
-          return true;
-        } else {
-          console.log('iframe.flutterapp.nativejs: Send Message - Invalid. Reason - Flutter app is not hosted in an iframe');
-          return false;
-        }
+        // if (window.parent !== window) {
+        //   console.log('iframe.flutterapp.nativejs: Send Message - ', message);
+        //   window.parent.postMessage(message, '*');
+        //   console.log('iframe.flutterapp.nativejs: Send Message - Success');
+        //   return true;
+        // } else {
+        //   console.log('iframe.flutterapp.nativejs: Send Message - Invalid. Reason - Flutter app is not hosted in an iframe');
+        //   return false;
+        // }
       } catch (e) {
         console.error('iframe.flutterapp.nativejs: Send Message - Failed. Reason - ', e);
         return false;
