@@ -30,6 +30,17 @@ class _CoordinatesIframeWidgetState extends State<CoordinatesIframeWidget> {
   Widget build(BuildContext context) {
     final appState = context.watch<MyAppState>();
 
+    // Automatically show iframe when token response is received
+    if (!_showIframe && appState.tokenResponse != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _showIframe = true;
+          });
+        }
+      });
+    }
+
     return Stack(
       children: [
         if (_showIframe)
@@ -89,42 +100,15 @@ class _CoordinatesIframeWidgetState extends State<CoordinatesIframeWidget> {
                         ),
                       ),
                       SizedBox(width: 16), // Added spacing
-                      // Drag information section OR Token response section (mutually exclusive)
+                      // Token response section (prioritized) OR Drag information section
                       Expanded(
                         flex: 2,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Show drag information when dragging is active
-                            if (widget.isDragging) ...[
-                              Text(
-                                'Dragging',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                              ),
-                              SizedBox(height: 4),
-                              // Changed to Column for better layout
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (widget.dragStartPosition != null)
-                                    _buildCompactInfoRow('Start:',
-                                        '(${widget.dragStartPosition!.dx.toInt()}, ${widget.dragStartPosition!.dy.toInt()})'),
-                                  SizedBox(height: 2),
-                                  if (widget.currentDragPosition != null)
-                                    _buildCompactInfoRow('Current:',
-                                        '(${widget.currentDragPosition!.dx.toInt()}, ${widget.currentDragPosition!.dy.toInt()})'),
-                                ],
-                              ),
-                            ]
-                            // Show token response when not dragging and token is available
-                            else if (appState.tokenResponse != null) ...[
+                            // Show token response first (prioritized over dragging)
+                            if (appState.tokenResponse != null) ...[
                               Row(
                                 children: [
                                   Icon(Icons.check_circle,
@@ -178,6 +162,33 @@ class _CoordinatesIframeWidgetState extends State<CoordinatesIframeWidget> {
                                             color: Colors.grey[400],
                                           ),
                                     ),
+                                ],
+                              ),
+                            ]
+                            // Show drag information when dragging and no token response
+                            else if (widget.isDragging) ...[
+                              Text(
+                                'Dragging',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                              ),
+                              SizedBox(height: 4),
+                              // Changed to Column for better layout
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (widget.dragStartPosition != null)
+                                    _buildCompactInfoRow('Start:',
+                                        '(${widget.dragStartPosition!.dx.toInt()}, ${widget.dragStartPosition!.dy.toInt()})'),
+                                  SizedBox(height: 2),
+                                  if (widget.currentDragPosition != null)
+                                    _buildCompactInfoRow('Current:',
+                                        '(${widget.currentDragPosition!.dx.toInt()}, ${widget.currentDragPosition!.dy.toInt()})'),
                                 ],
                               ),
                             ]
